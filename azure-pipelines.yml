@@ -37,6 +37,6 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Pipeline.Workspace)/__w/1/s/cone/conec'
+    targetPath: '/__w/1/s/cone/conec'
     artifact: 'conec-binary'
 
