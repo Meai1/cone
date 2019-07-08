@@ -12,12 +12,12 @@ pool:
 container: meai1/llvmcone:llvm8
 
 steps:
-- script: ls -la
-  displayName: 'check if this is the right container'
-
 - script: |
     echo "$USER"
     echo `ls -la` /root/llvm8
+  displayName: 'check if this is the right container'
+
+- script: |
     git clone https://github.com/Meai1/cone
     mkdir cone/build && cd cone/build
     cmake ..
