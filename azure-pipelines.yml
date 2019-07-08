@@ -31,12 +31,30 @@ steps:
   displayName: 'check Pipeline.Workspace'
 
 - script: |
+    echo $(Agent.BuildDirectory)
+    ls -R $(Agent.BuildDirectory)
+  displayName: 'check Agent.BuildDirectory'
+
+- script: |
+    echo $(Build.SourcesDirectory)
+    ls -R $(Build.SourcesDirectory)
+  displayName: 'check Build.SourcesDirectory'
+
+- script: |
     echo '$(Build.ArtifactStagingDirectory)'
     ls -R $(Build.ArtifactStagingDirectory)
   displayName: 'check Build.ArtifactStagingDirectory'
 
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(Agent.BuildDirectory)
+    #contents: '**' 
+    targetFolder: $(Build.ArtifactStagingDirectory)
+  
+
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '/__w/1/s/cone/'
+    targetPath: '$(Build.ArtifactStagingDirectory)/cone/conec'
     artifact: 'conec-binary'
 
