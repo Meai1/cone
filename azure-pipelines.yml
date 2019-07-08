@@ -28,8 +28,8 @@ steps:
 - script: |
     echo '$(Pipeline.Workspace)'
     echo '$(Build.ArtifactStagingDirectory)'
-    ls '$(Pipeline.Workspace)'
-    ls '$(Build.ArtifactStagingDirectory)'
+    ls $(Pipeline.Workspace)
+    ls $(Build.ArtifactStagingDirectory)
   displayName: 'check build output'
 
 - task: PublishPipelineArtifact@1
