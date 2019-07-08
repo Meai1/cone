@@ -27,13 +27,16 @@ steps:
 
 - script: |
     echo '$(Pipeline.Workspace)'
+    ls -R $(Pipeline.Workspace)
+  displayName: 'check Pipeline.Workspace'
+
+- script: |
     echo '$(Build.ArtifactStagingDirectory)'
-    ls $(Pipeline.Workspace)
-    ls $(Build.ArtifactStagingDirectory)
-  displayName: 'check build output'
+    ls -R $(Build.ArtifactStagingDirectory)
+  displayName: 'check Build.ArtifactStagingDirectory'
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)/conec'
+    targetPath: '$(Build.ArtifactStagingDirectory)/cone'
     artifact: 'conec-binary'
 
