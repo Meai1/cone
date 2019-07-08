@@ -23,13 +23,15 @@ steps:
     mkdir cone/build && cd cone/build
     cmake ..
     sudo make -j4
-    cd .. && ./conec
-    # Publish pipeline artifact
-    # Publish a local directory or file as a named artifact for the current pipeline
-    - task: PublishPipelineArtifact@0
-      inputs:
-        artifactName: 'conec' 
-        targetPath: /cone/conec
   displayName: 'cone build'
 
+- script: |
+    echo `ls -la` /cone
+    echo $(Pipeline.Workspace)
+  displayName: 'check build output'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Pipeline.Workspace)'
+    artifact: 'conec'
 
