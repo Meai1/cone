@@ -16,6 +16,8 @@ steps:
   displayName: 'check if this is the right container'
 
 - script: |
+    echo "$USER"
+    echo `ls -la` /root/llvm8
     git clone https://github.com/Meai1/cone
     mkdir cone/build && cd cone/build
     cmake ..
