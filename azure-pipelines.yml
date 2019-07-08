@@ -50,11 +50,12 @@ steps:
   inputs:
     sourceFolder: $(Agent.BuildDirectory)
     contents: '**/cone/conec' 
+    flattenFolders: true
     targetFolder: $(Build.ArtifactStagingDirectory)
   
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)/cone/conec'
+    targetPath: '$(Build.ArtifactStagingDirectory)/conec'
     artifact: 'conec-binary'
 
