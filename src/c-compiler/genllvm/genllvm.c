@@ -8,6 +8,7 @@
 #include "../ir/ir.h"
 #include "../parser/lexer.h"
 #include "../shared/error.h"
+#include "../shared/timer.h"
 #include "../coneopts.h"
 #include "../ir/nametbl.h"
 #include "../shared/fileio.h"
@@ -126,6 +127,8 @@ void genlGloVarName(GenState *gen, VarDclNode *glovar) {
     glovar->llvmvar = LLVMAddGlobal(gen->module, genlType(gen, glovar->vtype), genlGlobalName((INamedNode*)glovar));
     if (permIsSame(glovar->perm, (INode*) immPerm))
         LLVMSetGlobalConstant(glovar->llvmvar, 1);
+    if (glovar->namesym && glovar->namesym->namestr == '_')
+        LLVMSetVisibility(glovar->llvmvar, LLVMHiddenVisibility);
 }
 
 // Generate LLVMValueRef for a global function
@@ -135,14 +138,21 @@ void genlGloFnName(GenState *gen, FnDclNode *glofn) {
         char *manglednm = genlGlobalName((INamedNode*)glofn);
         char *fnname = glofn->namesym? &glofn->namesym->namestr : "";
         glofn->llvmvar = LLVMAddFunction(gen->module, manglednm, genlType(gen, glofn->vtype));
+
+        // Specify appropriate storage class, visibility and call convention
+        // extern functions (linkedited in separately):
         if (glofn->flags & FlagSystem) {
             LLVMSetFunctionCallConv(glofn->llvmvar, LLVMX86StdcallCallConv);
             LLVMSetDLLStorageClass(glofn->llvmvar, LLVMDLLImportStorageClass);
         }
-        else if (fnname[0] != '_') {
-            //LLVMSetDLLStorageClass(glofn->llvmvar, LLVMDLLExportStorageClass);
-            LLVMSetVisibility(glofn->llvmvar, LLVMDefaultVisibility);
+        // else if glofn-flags involve dynamic library export:
+        //    LLVMSetDLLStorageClass(glofn->llvmvar, LLVMDLLExportStorageClass); 
+        else if (fnname[0] == '_') {
+            // Private globals should be hidden. (public globals have DefaultVisibility)            
+            LLVMSetVisibility(glofn->llvmvar, LLVMHiddenVisibility);
         }
+
+        // Add metadata on implemented functions (debug mode only)
         if (!gen->opt->release && glofn->value) {
             LLVMMetadataRef fntype = LLVMDIBuilderCreateSubroutineType(gen->dibuilder,
                 gen->difile, NULL, 0, 0);
@@ -204,7 +214,6 @@ void genlModule(GenState *gen, ModuleNode *mod) {
 }
 
 void genlPackage(GenState *gen, ModuleNode *mod) {
-    char *error = NULL;
 
     assert(mod->tag == ModuleTag);
     gen->module = LLVMModuleCreateWithNameInContext(gen->opt->srcname, gen->context);
@@ -217,14 +226,6 @@ void genlPackage(GenState *gen, ModuleNode *mod) {
     genlModule(gen, mod);
     if (!gen->opt->release)
         LLVMDIBuilderFinalize(gen->dibuilder);
-
-    // Verify generated IR
-    LLVMVerifyModule(gen->module, LLVMReturnStatusAction, &error);
-    if (error) {
-        if (*error)
-            errorMsg(ErrorGenErr, "Module verification failed:\n%s", error);
-        LLVMDisposeMessage(error);
-    }
 }
 
 // Use provided options (triple, etc.) to creation a machine
@@ -297,6 +298,18 @@ void genmod(GenState *gen, ModuleNode *mod) {
     // Generate IR to LLVM IR
     genlPackage(gen, mod);
 
+    // Verify generated IR
+    if (gen->opt->verify) {
+        timerBegin(VerifyTimer);
+        char *error = NULL;
+        LLVMVerifyModule(gen->module, LLVMReturnStatusAction, &error);
+        if (error) {
+            if (*error)
+                errorMsg(ErrorGenErr, "Module verification failed:\n%s", error);
+            LLVMDisposeMessage(error);
+        }
+    }
+
     // Serialize the LLVM IR, if requested
     if (gen->opt->print_llvmir && LLVMPrintModuleToFile(gen->module, fileMakePath(gen->opt->output, mod->lexer->fname, "preir"), &err) != 0) {
         errorMsg(ErrorGenErr, "Could not emit pre-ir file: %s", err);
@@ -304,6 +317,7 @@ void genmod(GenState *gen, ModuleNode *mod) {
     }
 
     // Optimize the generated LLVM IR
+    timerBegin(OptTimer);
     LLVMPassManagerRef passmgr = LLVMCreatePassManager();
     LLVMAddDemoteMemoryToRegisterPass(passmgr);        // Demote allocas to registers.
     LLVMAddInstructionCombiningPass(passmgr);        // Do simple "peephole" and bit-twiddling optimizations
@@ -322,6 +336,7 @@ void genmod(GenState *gen, ModuleNode *mod) {
     }
 
     // Transform IR to target's ASM and OBJ
+    timerBegin(CodeGenTimer);
     if (gen->machine)
         genlOut(fileMakePath(gen->opt->output, mod->lexer->fname, gen->opt->wasm? "wasm" : objext),
             gen->opt->print_asm? fileMakePath(gen->opt->output, mod->lexer->fname, gen->opt->wasm? "wat" : asmext) : NULL,

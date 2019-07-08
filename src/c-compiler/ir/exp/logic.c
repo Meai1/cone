@@ -30,23 +30,31 @@ void logicPrint(LogicNode *node) {
     }
 }
 
-// Analyze not logic node
-void logicNotPass(PassState *pstate, LogicNode *node) {
-    inodeWalk(pstate, &node->lexp);
-    if (pstate->pass == TypeCheck)
-        if (0 == iexpCoerces((INode*)boolType, &node->lexp))
-            errorMsgNode(node->lexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
+// Name resolution of not logic node
+void logicNotNameRes(NameResState *pstate, LogicNode *node) {
+    inodeNameRes(pstate, &node->lexp);
+}
+
+// Type check not logic node
+void logicNotTypeCheck(TypeCheckState *pstate, LogicNode *node) {
+    inodeTypeCheck(pstate, &node->lexp);
+    if (0 == iexpCoerces((INode*)boolType, &node->lexp))
+        errorMsgNode(node->lexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
+}
+
+// Name resolution of logic node
+void logicNameRes(NameResState *pstate, LogicNode *node) {
+    inodeNameRes(pstate, &node->lexp);
+    inodeNameRes(pstate, &node->rexp);
 }
 
 // Analyze logic node
-void logicPass(PassState *pstate, LogicNode *node) {
-    inodeWalk(pstate, &node->lexp);
-    inodeWalk(pstate, &node->rexp);
+void logicTypeCheck(TypeCheckState *pstate, LogicNode *node) {
+    inodeTypeCheck(pstate, &node->lexp);
+    inodeTypeCheck(pstate, &node->rexp);
 
-    if (pstate->pass == TypeCheck) {
-        if (0 == iexpCoerces((INode*)boolType, &node->lexp))
-            errorMsgNode(node->lexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
-        if (0 == iexpCoerces((INode*)boolType, &node->rexp))
-            errorMsgNode(node->rexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
-    }
+    if (0 == iexpCoerces((INode*)boolType, &node->lexp))
+        errorMsgNode(node->lexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
+    if (0 == iexpCoerces((INode*)boolType, &node->rexp))
+        errorMsgNode(node->rexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
 }

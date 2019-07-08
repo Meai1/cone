@@ -11,36 +11,32 @@
 #include "ir/nametbl.h"
 #include "ir/ir.h"
 #include "shared/error.h"
+#include "shared/timer.h"
 #include "parser/lexer.h"
 #include "parser/parser.h"
 #include "genllvm/genllvm.h"
 
 #include <stdio.h>
-#include <time.h>
 #include <assert.h>
-
-clock_t startTime;
 
 // Run all semantic analysis passes against the AST/IR (after parse and before gen)
 void doAnalysis(ModuleNode **mod) {
-    PassState pstate;
-    pstate.mod = *mod;
-    pstate.typenode = NULL;
-    pstate.fnsig = NULL;
-    pstate.scope = 0;
-    pstate.flags = 0;
 
     // Resolve all name uses to their appropriate declaration
     // Note: Some nodes may be replaced (e.g., 'a' to 'self.a')
-    pstate.pass = NameResolution;
-    inodeWalk(&pstate, (INode**)mod);
+    NameResState nstate;
+    nstate.typenode = NULL;
+    nstate.scope = 0;
+    nstate.flags = 0;
+    inodeNameRes(&nstate, (INode**)mod);
     if (errors)
         return;
 
     // Apply syntactic sugar, and perform type inference/check
     // Note: Some nodes may be lowered, injected or replaced
-    pstate.pass = TypeCheck;
-    inodeWalk(&pstate, (INode**)mod);
+    TypeCheckState tstate;
+    tstate.fnsig = NULL;
+    inodeTypeCheck(&tstate, (INode**)mod);
 }
 
 int main(int argc, char **argv) {
@@ -48,9 +44,6 @@ int main(int argc, char **argv) {
     GenState gen;
     ModuleNode *modnode;
     int ok;
-
-    // Start measuring processing time for compilation
-    startTime = clock();
 
     // Get compiler's options from passed arguments
     ok = coneOptSet(&coneopt, &argc, argv);
@@ -62,21 +55,28 @@ int main(int argc, char **argv) {
     coneopt.srcname = fileName(coneopt.srcpath);
 
     // We set up generation early because we need target info, e.g.: pointer size
+    timerBegin(SetupTimer);
     genSetup(&gen, &coneopt);
 
     // Parse source file, do semantic analysis, and generate code
+    timerBegin(ParseTimer);
     modnode = parsePgm(&coneopt);
     if (errors == 0) {
+        timerBegin(SemTimer);
         doAnalysis(&modnode);
         if (errors == 0) {
+            timerBegin(GenTimer);
             if (coneopt.print_ir)
                 inodePrint(coneopt.output, coneopt.srcpath, (INode*)modnode);
             genmod(&gen, modnode);
             genClose(&gen);
         }
     }
+    timerBegin(TimerCount);
 
     // Close up everything necessary
+    if (coneopt.verbosity > 0)
+        timerPrint();
     errorSummary();
 #ifdef _DEBUG
     getchar();    // Hack for VS debugging

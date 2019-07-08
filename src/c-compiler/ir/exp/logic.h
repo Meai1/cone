@@ -17,7 +17,17 @@ typedef struct LogicNode {
 
 LogicNode *newLogicNode(int16_t typ);
 void logicPrint(LogicNode *node);
-void logicPass(PassState *pstate, LogicNode *node);
-void logicNotPass(PassState *pstate, LogicNode *node);
+
+// Name resolution of not logic node
+void logicNotNameRes(NameResState *pstate, LogicNode *node);
+
+// Type check not logic node
+void logicNotTypeCheck(TypeCheckState *pstate, LogicNode *node);
+
+// Name resolution of logic node
+void logicNameRes(NameResState *pstate, LogicNode *node);
+
+// Type check logic node
+void logicTypeCheck(TypeCheckState *pstate, LogicNode *node);
 
 #endif

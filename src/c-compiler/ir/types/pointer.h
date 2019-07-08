@@ -20,8 +20,11 @@ PtrNode *newPtrNode();
 // Serialize a pointer type
 void ptrPrint(PtrNode *node);
 
-// Semantically analyze a pointer type
-void ptrPass(PassState *pstate, PtrNode *name);
+// Name resolution of a pointer type
+void ptrNameRes(NameResState *pstate, PtrNode *node);
+
+// Type check a pointer type
+void ptrTypeCheck(TypeCheckState *pstate, PtrNode *name);
 
 // Compare two pointer signatures to see if they are equivalent
 int ptrEqual(PtrNode *node1, PtrNode *node2);

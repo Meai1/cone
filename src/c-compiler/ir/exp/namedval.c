@@ -23,10 +23,13 @@ void namedValPrint(NamedValNode *node) {
     inodePrintNode(node->val);
 }
 
-// Analyze named value node
-void namedValWalk(PassState *pstate, NamedValNode *node) {
-    inodeWalk(pstate, &node->val);
-    if (pstate->pass == TypeCheck) {
-        node->vtype = ((ITypedNode*)node->val)->vtype;
-    }
+// Name resolution of named value node
+void namedValNameRes(NameResState *pstate, NamedValNode *node) {
+    inodeNameRes(pstate, &node->val);
+}
+
+// Type check named value node
+void namedValTypeCheck(TypeCheckState *pstate, NamedValNode *node) {
+    inodeTypeCheck(pstate, &node->val);
+    node->vtype = ((ITypedNode*)node->val)->vtype;
 }

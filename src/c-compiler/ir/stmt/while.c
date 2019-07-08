@@ -23,19 +23,23 @@ void whilePrint(WhileNode *node) {
     inodePrintNode(node->blk);
 }
 
-// Semantic pass on the while block
-void whilePass(PassState *pstate, WhileNode *node) {
+// while block name resolution
+void whileNameRes(NameResState *pstate, WhileNode *node) {
     uint16_t svflags = pstate->flags;
     pstate->flags |= PassWithinWhile;
 
-    inodeWalk(pstate, &node->condexp);
-    inodeWalk(pstate, &node->blk);
-
-    if (pstate->pass == TypeCheck)
-        if (0==iexpCoerces((INode*)boolType, &node->condexp))
-            errorMsgNode(node->condexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
+    inodeNameRes(pstate, &node->condexp);
+    inodeNameRes(pstate, &node->blk);
 
     pstate->flags = svflags;
+}
+
+// Type check the while block (conditional expression must be coercible to bool)
+void whileTypeCheck(TypeCheckState *pstate, WhileNode *node) {
+    inodeTypeCheck(pstate, &node->condexp);
+    inodeTypeCheck(pstate, &node->blk);
+    if (0 == iexpCoerces((INode*)boolType, &node->condexp))
+        errorMsgNode(node->condexp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
 }
 
 // Perform data flow analysis on an while statement

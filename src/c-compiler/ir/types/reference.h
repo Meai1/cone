@@ -28,11 +28,14 @@ RefNode *newArrayDerefNodeFrom(RefNode *refnode);
 // Is type a nullable reference?
 int refIsNullable(INode *typenode);
 
-// Serialize a pointer type
+// Serialize a reference type
 void refPrint(RefNode *node);
 
-// Semantically analyze a reference node
-void refPass(PassState *pstate, RefNode *name);
+// Name resolution of a reference node
+void refNameRes(NameResState *pstate, RefNode *node);
+
+// Type check a reference node
+void refTypeCheck(TypeCheckState *pstate, RefNode *name);
 
 // Compare two reference signatures to see if they are equivalent
 int refEqual(RefNode *node1, RefNode *node2);

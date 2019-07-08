@@ -25,8 +25,8 @@ void structPrint(StructNode *node) {
     inodeFprint(node->tag == StructTag? "struct %s {}" : "alloc %s {}", &node->namesym->namestr);
 }
 
-// Semantically analyze a struct type
-void structPass(PassState *pstate, StructNode *node) {
+// Name resolution of a struct type
+void structNameRes(NameResState *pstate, StructNode *node) {
     INode *svtypenode = pstate->typenode;
     pstate->typenode = (INode*)node;
     nametblHookPush();
@@ -37,10 +37,19 @@ void structPass(PassState *pstate, StructNode *node) {
             nametblHookNode((INamedNode*)*nodesp);
     }
     for (imethnodesFor(&node->methprops, cnt, nodesp)) {
-        inodeWalk(pstate, (INode**)nodesp);
+        inodeNameRes(pstate, (INode**)nodesp);
     }
     nametblHookPop();
     pstate->typenode = svtypenode;
+}
+
+// Type check a struct type
+void structTypeCheck(TypeCheckState *pstate, StructNode *node) {
+    INode **nodesp;
+    uint32_t cnt;
+    for (imethnodesFor(&node->methprops, cnt, nodesp)) {
+        inodeTypeCheck(pstate, (INode**)nodesp);
+    }
 }
 
 // Compare two struct signatures to see if they are equivalent

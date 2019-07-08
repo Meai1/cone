@@ -152,9 +152,10 @@ char *itypeMangle(char *bufp, INode *vtype) {
         break;
     }
     case RefTag:
+    case ArrayRefTag:
     {
         RefNode *reftype = (RefNode *)vtype;
-        *bufp++ = '&';
+        *bufp++ = vtype->tag==ArrayRefTag? '&[]' : '&';
         if (permIsSame(reftype->perm, (INode*)constPerm)) {
             bufp = itypeMangle(bufp, reftype->perm);
             *bufp++ = ' ';
@@ -178,6 +179,8 @@ char *itypeMangle(char *bufp, INode *vtype) {
 // Return true is type has a defined size. Opaque structs, traits/interfaces will be false.
 int itypeHasSize(INode *type) {
     INode *dcltype = itypeGetTypeDcl(type);
+    if (dcltype->tag == VoidTag)
+        return 0;
     if (dcltype->tag == StructTag)
         return !(dcltype->flags & FlagStructOpaque);
     return 1;

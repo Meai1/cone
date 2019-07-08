@@ -85,31 +85,44 @@ void modHook(ModuleNode *oldmod, ModuleNode *newmod) {
     }
 }
 
-// Check the module node
-void modPass(PassState *pstate, ModuleNode *mod) {
-    ModuleNode *svmod = pstate->mod;
-    pstate->mod = mod;
+// Name resolution of the module node
+void modNameRes(NameResState *pstate, ModuleNode *mod) {
+
+    // Switch name table over to new module
+    modHook((ModuleNode*)mod->owner, mod);
+
+    // Process all nodes
     INode **nodesp;
     uint32_t cnt;
+    for (nodesFor(mod->nodes, cnt, nodesp)) {
+        inodeNameRes(pstate, nodesp);
+    }
 
-    // Switch name table over to new mod for name resolution
-    if (pstate->pass == NameResolution)
-        modHook((ModuleNode*)mod->owner, mod);
+    // Switch name table back to owner module
+    modHook(mod, (ModuleNode*)mod->owner);
+}
 
-    // For global variables and functions, handle all their type info first
+// Type check the module node
+void modTypeCheck(TypeCheckState *pstate, ModuleNode *mod) {
+
+    // Process only types for all global functions/variables first
+    // This ensures we can handle forward references to type info
+    // (e.g., function parms) that must have been inferred from the value
+    INode **nodesp;
+    uint32_t cnt;
     for (nodesFor(mod->nodes, cnt, nodesp)) {
         switch ((*nodesp)->tag) {
         case VarDclTag:
         {
             VarDclNode * varnode = (VarDclNode*)*nodesp;
-            inodeWalk(pstate, (INode**)&varnode->perm);
-            inodeWalk(pstate, &varnode->vtype);
+            inodeTypeCheck(pstate, (INode**)&varnode->perm);
+            inodeTypeCheck(pstate, &varnode->vtype);
             break;
         }
         case FnDclTag:
         {
             FnDclNode * varnode = (FnDclNode*)*nodesp;
-            inodeWalk(pstate, &varnode->vtype);
+            inodeTypeCheck(pstate, &varnode->vtype);
             break;
         }
         }
@@ -118,13 +131,7 @@ void modPass(PassState *pstate, ModuleNode *mod) {
     // Now we can process the full node info
     if (errors == 0) {
         for (nodesFor(mod->nodes, cnt, nodesp)) {
-            inodeWalk(pstate, nodesp);
+            inodeTypeCheck(pstate, nodesp);
         }
     }
-
-    // Switch name table back to owner module
-    if (pstate->pass == NameResolution)
-        modHook(mod, (ModuleNode*)mod->owner);
-
-    pstate->mod = svmod;
 }

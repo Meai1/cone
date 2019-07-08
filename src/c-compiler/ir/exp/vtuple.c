@@ -28,23 +28,24 @@ void vtuplePrint(VTupleNode *tuple) {
     }
 }
 
-// Check the value tuple node
-void vtupleWalk(PassState *pstate, VTupleNode *tuple) {
-    if (pstate->pass == NameResolution) {
-        INode **nodesp;
-        uint32_t cnt;
-        for (nodesFor(tuple->values, cnt, nodesp))
-            inodeWalk(pstate, nodesp);
-    }
-    else if (pstate->pass == TypeCheck) {
-        // Build ad hoc type tuple that accumulates types of vtuple's values
-        TTupleNode *ttuple = newTTupleNode(tuple->values->used);
-        tuple->vtype = (INode *)ttuple;
-        INode **nodesp;
-        uint32_t cnt;
-        for (nodesFor(tuple->values, cnt, nodesp)) {
-            inodeWalk(pstate, nodesp);
-            nodesAdd(&ttuple->types, ((ITypedNode *)*nodesp)->vtype);
-        }
+// Name resolution for vtuple
+void vtupleNameRes(NameResState *pstate, VTupleNode *tuple) {
+    INode **nodesp;
+    uint32_t cnt;
+    for (nodesFor(tuple->values, cnt, nodesp))
+        inodeNameRes(pstate, nodesp);
+}
+
+// Type check the value tuple node
+// - Infer type tuple from types of vtuple's values
+void vtupleTypeCheck(TypeCheckState *pstate, VTupleNode *tuple) {
+    // Build ad hoc type tuple that accumulates types of vtuple's values
+    TTupleNode *ttuple = newTTupleNode(tuple->values->used);
+    tuple->vtype = (INode *)ttuple;
+    INode **nodesp;
+    uint32_t cnt;
+    for (nodesFor(tuple->values, cnt, nodesp)) {
+        inodeTypeCheck(pstate, nodesp);
+        nodesAdd(&ttuple->types, ((ITypedNode *)*nodesp)->vtype);
     }
 }

@@ -15,7 +15,12 @@ typedef struct BorrowNode {
 
 BorrowNode *newBorrowNode();
 void borrowPrint(BorrowNode *node);
-void borrowPass(PassState *pstate, BorrowNode **node);
+
+// Name resolution of borrow node
+void borrowNameRes(NameResState *pstate, BorrowNode **nodep);
+
+// Type check borrow node
+void borrowTypeCheck(TypeCheckState *pstate, BorrowNode **node);
 
 // Perform data flow analysis on addr node
 void borrowFlow(FlowState *fstate, BorrowNode **nodep);

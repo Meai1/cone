@@ -37,6 +37,12 @@ void ulitPrint(ULitNode *node);
 FLitNode *newFLitNode(double nbr, INode *type);
 void flitPrint(FLitNode *node);
 
+// Name resolution of lit node
+void litNameRes(NameResState* pstate, ITypedNode *node);
+
+// Type check lit node
+void litTypeCheck(TypeCheckState* pstate, ITypedNode *node);
+
 NullNode *newNullNode();
 
 SLitNode *newSLitNode(char *str, INode *type);

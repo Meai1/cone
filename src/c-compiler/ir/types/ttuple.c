@@ -28,10 +28,18 @@ void ttuplePrint(TTupleNode *tuple) {
     }
 }
 
-// Check the type tuple node
-void ttupleWalk(PassState *pstate, TTupleNode *tuple) {
+// Name resolution of the type tuple node
+void ttupleNameRes(NameResState *pstate, TTupleNode *tuple) {
     INode **nodesp;
     uint32_t cnt;
     for (nodesFor(tuple->types, cnt, nodesp))
-        inodeWalk(pstate, nodesp);
+        inodeNameRes(pstate, nodesp);
+}
+
+// Type check the type tuple node
+void ttupleTypeCheck(TypeCheckState *pstate, TTupleNode *tuple) {
+    INode **nodesp;
+    uint32_t cnt;
+    for (nodesFor(tuple->types, cnt, nodesp))
+        inodeTypeCheck(pstate, nodesp);
 }

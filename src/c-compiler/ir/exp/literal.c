@@ -41,6 +41,16 @@ void flitPrint(FLitNode *lit) {
     inodePrintNode(lit->vtype);
 }
 
+// Name resolution of lit node
+void litNameRes(NameResState* pstate, ITypedNode *node) {
+    inodeNameRes(pstate, &node->vtype);
+}
+
+// Type check lit node
+void litTypeCheck(TypeCheckState* pstate, ITypedNode *node) {
+    inodeTypeCheck(pstate, &node->vtype);
+}
+
 NullNode *newNullNode() {
     NullNode *node;
     newNode(node, NullNode, NullTag);

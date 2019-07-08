@@ -20,9 +20,14 @@ void ptrPrint(PtrNode *node) {
     inodePrintNode(node->pvtype);
 }
 
-// Semantically analyze a pointer type
-void ptrPass(PassState *pstate, PtrNode *node) {
-    inodeWalk(pstate, &node->pvtype);
+// Name resolution of a pointer type
+void ptrNameRes(NameResState *pstate, PtrNode *node) {
+    inodeNameRes(pstate, &node->pvtype);
+}
+
+// Type check a pointer type
+void ptrTypeCheck(TypeCheckState *pstate, PtrNode *node) {
+    inodeTypeCheck(pstate, &node->pvtype);
 }
 
 // Compare two pointer signatures to see if they are equivalent

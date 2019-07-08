@@ -15,7 +15,11 @@ typedef struct DerefNode {
 
 DerefNode *newDerefNode();
 void derefPrint(DerefNode *node);
-void derefPass(PassState *pstate, DerefNode *node);
+// Name resolution of deref node
+void derefNameRes(NameResState *pstate, DerefNode *node);
+
+// Type check deref node
+void derefTypeCheck(TypeCheckState *pstate, DerefNode *node);
 void derefAuto(INode **node);
 
 #endif

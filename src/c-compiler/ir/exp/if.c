@@ -58,21 +58,28 @@ void ifRemoveReturns(IfNode *ifnode) {
     }
 }
 
-// Check the if statement node
-void ifPass(PassState *pstate, IfNode *ifnode) {
+// if node name resolution
+void ifNameRes(NameResState *pstate, IfNode *ifnode) {
     INode **nodesp;
     uint32_t cnt;
     for (nodesFor(ifnode->condblk, cnt, nodesp)) {
-        inodeWalk(pstate, nodesp);
+        inodeNameRes(pstate, nodesp);
+    }
+}
 
-        // Type check the 'if':
+// Type check the if statement node
+// - Every conditional expression must be a bool
+// - if's vtype is specified/checked only when coerced by iexpCoerces
+void ifTypeCheck(TypeCheckState *pstate, IfNode *ifnode) {
+    INode **nodesp;
+    uint32_t cnt;
+    for (nodesFor(ifnode->condblk, cnt, nodesp)) {
+        inodeTypeCheck(pstate, nodesp);
+
         // - conditional must be a Bool
-        // - if's vtype is specified/checked only when coerced by iexpCoerces
-        if (pstate->pass == TypeCheck) {
-            if ((cnt & 1)==0 && *nodesp != voidType)
-                if (0==iexpCoerces((INode*)boolType, nodesp))
-                    errorMsgNode(*nodesp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
-        }
+        if ((cnt & 1)==0 && *nodesp != voidType)
+            if (0==iexpCoerces((INode*)boolType, nodesp))
+                errorMsgNode(*nodesp, ErrorInvType, "Conditional expression must be coercible to boolean value.");
     }
 }
 

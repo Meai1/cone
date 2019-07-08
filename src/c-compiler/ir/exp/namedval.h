@@ -17,6 +17,11 @@ typedef struct NamedValNode {
 
 NamedValNode *newNamedValNode(INode *name);
 void namedValPrint(NamedValNode *node);
-void namedValWalk(PassState *pstate, NamedValNode *node);
+
+// Name resolution of named value node
+void namedValNameRes(NameResState *pstate, NamedValNode *node);
+
+// Type check named value node
+void namedValTypeCheck(TypeCheckState *pstate, NamedValNode *node);
 
 #endif

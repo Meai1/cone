@@ -34,10 +34,15 @@ void arrayPrint(ArrayNode *node) {
     inodePrintNode(node->elemtype);
 }
 
-// Semantically analyze an array type
-void arrayPass(PassState *pstate, ArrayNode *node) {
-    inodeWalk(pstate, &node->elemtype);
-    if (pstate->pass == TypeCheck && !itypeHasSize(node->elemtype))
+// Name resolution of an array type
+void arrayNameRes(NameResState *pstate, ArrayNode *node) {
+    inodeNameRes(pstate, &node->elemtype);
+}
+
+// Type check an array type
+void arrayTypeCheck(TypeCheckState *pstate, ArrayNode *node) {
+    inodeTypeCheck(pstate, &node->elemtype);
+    if (!itypeHasSize(node->elemtype))
         errorMsgNode(node->elemtype, ErrorInvType, "Type must have a defined size.");
 }
 

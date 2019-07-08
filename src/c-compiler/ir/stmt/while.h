@@ -17,7 +17,12 @@ typedef struct WhileNode {
 
 WhileNode *newWhileNode();
 void whilePrint(WhileNode *wnode);
-void whilePass(PassState *pstate, WhileNode *wnode);
+
+// while block name resolution
+void whileNameRes(NameResState *pstate, WhileNode *node);
+
+// Type check the while block (conditional expression must be coercible to bool)
+void whileTypeCheck(TypeCheckState *pstate, WhileNode *wnode);
 
 // Perform data flow analysis on an while statement
 void whileFlow(FlowState *fstate, WhileNode **nodep);
