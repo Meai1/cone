@@ -9,7 +9,7 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
   
-container: llvmcone:llvm8
+container: meai1/llvmcone:llvm8
 
 steps:
 - script: ls -la
@@ -19,6 +19,8 @@ steps:
     git clone https://github.com/Meai1/cone
     mkdir cone/build && cd cone/build
     cmake ..
+    make -j4
+    cd .. && conec
   displayName: 'cone build'
 
 
