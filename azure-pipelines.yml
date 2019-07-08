@@ -26,12 +26,12 @@ steps:
   displayName: 'cone build'
 
 - script: |
-    echo `ls -la` /cone
-    echo $(Pipeline.Workspace)
+    echo '$(Pipeline.Workspace)''
+    echo '$(Build.ArtifactStagingDirectory)'
   displayName: 'check build output'
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Pipeline.Workspace)'
+    targetPath: '$(Build.ArtifactStagingDirectory)'
     artifact: 'conec'
 
