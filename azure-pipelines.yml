@@ -49,7 +49,7 @@ steps:
 - task: CopyFiles@2
   inputs:
     sourceFolder: $(Agent.BuildDirectory)
-    #contents: '**' 
+    contents: '**/cone/conec' 
     targetFolder: $(Build.ArtifactStagingDirectory)
   
 
