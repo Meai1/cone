@@ -22,7 +22,7 @@ steps:
     git clone https://github.com/Meai1/cone
     mkdir cone/build && cd cone/build
     cmake ..
-    make -j4
+    sudo make -j4
     cd .. && conec
   displayName: 'cone build'
 
